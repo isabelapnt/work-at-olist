@@ -7,3 +7,67 @@
 *.log
 .env
 tmp
+
+ Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+node_modules/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+
+# Django stuff:
+*.log
+local_settings.py
+
+# dotenv
+.env
+
+# virtualenv
+venv/
+ENV/
+
+# MacOS
+.DS_Store
+
+# DB
+*.sqlite3
+*.sqlite
+notifications
+
+# vagrant
+.vagrant/
+
+# Docs
+docs/index.html
+docs/main.css
+docs/main.css.map
+
+.env
+.etc
