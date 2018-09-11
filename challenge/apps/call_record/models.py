@@ -2,6 +2,8 @@ from django.db import models
 from model_utils import Choices
 from decimal import Decimal
 
+from .service import get_call_price
+
 
 class CallRecord(models.Model):
     class Meta:
@@ -10,11 +12,11 @@ class CallRecord(models.Model):
 
     RECORD_TYPE = Choices(
         ('start', 'start', 'Call Start Record'),
-        ('end', 'end', 'Call Start Record'),
+        ('end', 'end', 'Call End Record'),
     )
 
     record_type = models.CharField('Type', max_length=28, choices=RECORD_TYPE, default=RECORD_TYPE.start)
-    record_timestamp = models.DateTimeField('Record Timestamp', auto_now_add=True)
+    record_timestamp = models.DateTimeField('Record Timestamp')
 
 
 class StartRecord(CallRecord):
@@ -31,7 +33,7 @@ class EndRecord(CallRecord):
         verbose_name = 'Call End Record'
         verbose_name_plural = 'Call End Records'
 
-    start_record = models.OneToOneField('StartRecord', on_delete=models.CASCADE)
+    start_record = models.OneToOneField('StartRecord', related_name="end_record", on_delete=models.CASCADE)
 
 
 class TelephoneBill(models.Model):
@@ -42,3 +44,7 @@ class TelephoneBill(models.Model):
     start_record = models.ForeignKey('StartRecord', null=True, on_delete=models.SET_NULL)
     duration = models.TimeField('Call Duration', null=True)
     price = models.DecimalField('Call Price', max_digits=8, decimal_places=2, default=Decimal())
+
+    @property
+    def call_price(self):
+        return get_call_price(self)
