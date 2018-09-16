@@ -2,7 +2,7 @@ from django.db import models
 from model_utils import Choices
 from decimal import Decimal
 
-from .service import get_call_price
+# from .service import create_charge
 
 
 class CallRecord(models.Model):
@@ -21,14 +21,12 @@ class CallRecord(models.Model):
     destination = models.CharField(max_length=9, null=True, blank=True)
     call_id = models.IntegerField()
 
-    def save(self, **kwargs):
-        if self.record_type == CallRecord.RECORD_TYPE.start:
-            self.call_id = CallRecord.objects.count()
-        if self.call_id:
-            start_record = CallRecord.objects.filter(call_id=self.call_id, record_type=CallRecord.RECORD_TYPE.start)
-            if start_record and start_record.count() > 1:
-                self.call_id = start_record.first().id
-        super(CallRecord, self).save()
+    # def save(self, **kwargs):
+    #     if self.call_id:
+    #         start_record = CallRecord.objects.filter(call_id=self.call_id, record_type=CallRecord.RECORD_TYPE.start)
+    #         if start_record and start_record.count() > 1:
+    #             self.call_id = start_record.first().id
+    #     super(CallRecord, self).save()
 
 
 class TelephoneBill(models.Model):
