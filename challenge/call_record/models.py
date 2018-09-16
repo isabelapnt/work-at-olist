@@ -11,29 +11,24 @@ class CallRecord(models.Model):
         verbose_name_plural = 'Call Records'
 
     RECORD_TYPE = Choices(
-        ('start', 'start', 'Call Start Record'),
-        ('end', 'end', 'Call End Record'),
+        ('start', 'start', 'Start Record'),
+        ('end', 'end', 'End Record'),
     )
 
     record_type = models.CharField('Type', max_length=28, choices=RECORD_TYPE, default=RECORD_TYPE.start)
     record_timestamp = models.DateTimeField('Record Timestamp')
-
-
-class StartRecord(CallRecord):
-    class Meta:
-        verbose_name = 'Call Start Record'
-        verbose_name_plural = 'Call Start Records'
-
     source = models.CharField(max_length=9, null=True, blank=True)
     destination = models.CharField(max_length=9, null=True, blank=True)
+    call_id = models.IntegerField()
 
-
-class EndRecord(CallRecord):
-    class Meta:
-        verbose_name = 'Call End Record'
-        verbose_name_plural = 'Call End Records'
-
-    start_record = models.OneToOneField('StartRecord', related_name="end_record", on_delete=models.CASCADE)
+    def save(self, **kwargs):
+        if self.record_type == CallRecord.RECORD_TYPE.start:
+            self.call_id = CallRecord.objects.count()
+        if self.call_id:
+            start_record = CallRecord.objects.filter(call_id=self.call_id, record_type=CallRecord.RECORD_TYPE.start)
+            if start_record and start_record.count() > 1:
+                self.call_id = start_record.first().id
+        super(CallRecord, self).save()
 
 
 class TelephoneBill(models.Model):
@@ -41,7 +36,7 @@ class TelephoneBill(models.Model):
         verbose_name = 'Telephone Bill'
         verbose_name_plural = 'Telephone Bills'
 
-    start_record = models.ForeignKey('StartRecord', null=True, on_delete=models.SET_NULL)
+    call_record = models.ForeignKey('CallRecord', null=True, on_delete=models.SET_NULL)
     duration = models.TimeField('Call Duration', null=True)
     price = models.DecimalField('Call Price', max_digits=8, decimal_places=2, default=Decimal())
 
