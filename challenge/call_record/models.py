@@ -27,22 +27,22 @@ class TelephoneBill(models.Model):
         verbose_name = 'Telephone Bill'
         verbose_name_plural = 'Telephone Bills'
 
+    source = models.CharField(max_length=11)
     destination = models.CharField(max_length=11)
-    start_date = models.CharField(max_length=10)
-    start_time = models.CharField(max_length=10)
+    start_date = models.DateTimeField()
     duration = models.CharField(max_length=10)
     price = models.DecimalField('Call Price', max_digits=8, decimal_places=2, default=Decimal())
 
     @classmethod
-    def create_bill(cls, start_records, end_records, period):
+    def create_bill(cls, source, start_records, end_records, period):
         bill = []
         data = {}
         for start, end in zip(start_records, end_records):
             price = get_call_price(start, end)
 
+            data['source'] = source
             data['destination'] = start.destination
-            data['start_date'] = start.record_timestamp.date().strftime('%Y-%m-%d')
-            data['start_time'] = start.record_timestamp.time().strftime('%Hh%Mm%Ss')
+            data['start_date'] = start.record_timestamp
             data['duration'] = get_duration_in_time(start, end)
             data['price'] = price
 
@@ -50,3 +50,11 @@ class TelephoneBill(models.Model):
             bill.append(instanse.id)
 
         return bill
+
+    @property
+    def format_date(self):
+        return self.start_date.date().strftime('%Y-%m-%d')
+
+    @property
+    def format_time(self):
+        return self.start_date.time().strftime('%Hh%Mm%Ss')

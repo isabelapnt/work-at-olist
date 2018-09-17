@@ -23,7 +23,7 @@ def get_duration_in_minutes(start_record, end_record):
     end = end_record.record_timestamp
     interval = start - end
 
-    duration = interval.total_seconds()
+    duration = abs(interval.total_seconds())
     minutes = divmod(duration, 60)[0]
     return int(minutes)
 
@@ -45,36 +45,46 @@ def get_call_price(start_record, end_record):
     return fixed_charge + price
 
 
-def get_records_date_in_period(start_records, end_records, period):
+def get_period_date(period):
     now = timezone.now()
     if not period:
         date = now + relativedelta(months=-1)
-        end = end_records.filter(record_timestamp__lte=date)
-    elif period > 0 or period <= 12:
-        date = datetime(now.year, period, now.day)
-        end = end_records.filter(record_timestamp__lte=date)
+    elif period > 0 and period <= 12:
+        date = timezone.datetime(now.year, period, now.day)
     else:
-        date = datetime(period, now.month, now.day)
-        end = end_records.filter(record_timestamp__lte=date)
+        date = timezone.datetime(period, now.month, now.day)
 
-    return end
+    return date
 
 
 def get_start_end_records_in_period(source, period):
     from .models import CallRecord
 
-    start_records = CallRecord.objects.filter(source=source)
+    date = get_period_date(period)
+
+    start_records = CallRecord.objects.filter(source=source, record_timestamp__lte=date)
     start_call_ids = start_records.values_list('call_id', flat=True)
 
     end_records = CallRecord.objects.filter(
         call_id__in=list(start_call_ids),
         record_type=CallRecord.RECORD_TYPE.end
     )
-    end_records_period = get_records_date_in_period(start_records, end_records, period)
-    end_call_ids = end_records_period.values_list('call_id', flat=True)
+
+    end_call_ids = end_records.values_list('call_id', flat=True)
     valid_call_ids = list(set(start_call_ids).intersection(end_call_ids))
 
     start = start_records.filter(call_id__in=valid_call_ids)
     end = end_records.filter(call_id__in=valid_call_ids)
 
     return start, end
+
+
+def search_bill(source, period):
+    from .models import TelephoneBill
+
+    date = get_period_date(period)
+    bill = TelephoneBill.objects.filter(source=source, start_date__lte=date)
+
+    if bill:
+        return True, bill
+    return False, None

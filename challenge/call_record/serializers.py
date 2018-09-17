@@ -76,6 +76,9 @@ class GetTelephoneBillSerializer(serializers.Serializer):
 
 class TelephoneBillSerializer(serializers.ModelSerializer):
 
+    start_date = serializers.CharField(source='format_date')
+    start_time = serializers.CharField(source='format_time')
+
     class Meta:
         model = TelephoneBill
         fields = (
