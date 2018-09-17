@@ -19,6 +19,16 @@ class StartRecordSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('id', 'call_id')
 
+    def validate_source(self, source):
+        if not source.isdigit():
+            raise serializers.ValidationError('invalid')
+        return source
+
+    def validate_destination(self, destination):
+        if not destination.isdigit():
+            raise serializers.ValidationError('invalid')
+        return destination
+
     def create(self, validated_data):
         validated_data['call_id'] = CallRecord.objects.count()
         return CallRecord.objects.create(**validated_data)
@@ -48,13 +58,31 @@ class EndRecordSerializer(serializers.ModelSerializer):
         return record_type
 
 
+class GetTelephoneBillSerializer(serializers.Serializer):
+
+    subscriber_telephone = serializers.CharField(max_length=11)
+    period = serializers.IntegerField(required=False)
+
+    def validate_subscriber_telephone(self, subscriber_telephone):
+        if not subscriber_telephone.isdigit():
+            raise serializers.ValidationError('invalid')
+
+        has_source = CallRecord.objects.filter(source=subscriber_telephone).exists()
+        if not has_source:
+            raise serializers.ValidationError('not_found')
+
+        return subscriber_telephone
+
+
 class TelephoneBillSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TelephoneBill
         fields = (
             'id',
-            'call_record',
+            'destination',
+            'start_date',
+            'start_time',
             'duration',
             'price'
         )

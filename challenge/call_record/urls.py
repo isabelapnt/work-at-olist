@@ -7,9 +7,9 @@ from .api import (
 )
 
 router = SimpleRouter()
+router.register(r'billing', TelephoneBillViewSet, base_name='billing')
 router.register(r'start', StartRecordViewSet)
 router.register(r'end', EndRecordViewSet)
-router.register(r'billing', TelephoneBillViewSet)
 
 urlpatterns = [
     url(r'^', include(router.urls))
