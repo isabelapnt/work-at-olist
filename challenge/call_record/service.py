@@ -4,9 +4,7 @@ from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 
 
-
 def parse_time(s):
-    ''' Parse 12-hours format '''
     return datetime.strptime(s, '%I:%M %p').time()
 
 
@@ -45,7 +43,7 @@ def get_call_price(start_record, end_record):
     return fixed_charge + price
 
 
-def get_period_date(period):
+def get_period_date(period=None):
     now = timezone.now()
     if not period:
         date = now + relativedelta(months=-1)
